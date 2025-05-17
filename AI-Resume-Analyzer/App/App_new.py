@@ -32,7 +32,7 @@ import json
 from openai import OpenAI
 
 # Alibaba Cloud API endpoints and configuration
-ALIBABA_API_KEY = "sk-88e05c37d8d34169ab6adcbfdf06106d"  # Your API key
+ALIBABA_API_KEY = "######"  # Your API key
 ALIBABA_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 
 nltk.download('stopwords')
