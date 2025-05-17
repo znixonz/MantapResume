@@ -1,6 +1,6 @@
 # AI Resume Analyzer and Match Maker for Job Seekers 🔍
 
-![Project Banner](https://github.com/znixonz/MantapResume/blob/main/mantap/app/logo/mantap_logo.jpeg?raw=true) 
+![Project Banner](https://github.com/znixonz/MantapResume/blob/main/mantap/app/logo/header.png?raw=true) 
 
 A smart resume analysis system that leverages NLP and Qwen LLM to evaluate resumes, recommend career paths, and connect candidates with optimal job opportunities through Alibaba Cloud infrastructure.
 
