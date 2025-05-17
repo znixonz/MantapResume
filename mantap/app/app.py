@@ -29,9 +29,9 @@ from openai import OpenAI
 from docx import Document # For .docx file processing
 from dotenv import load_dotenv
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_icon='./logo/recommend.png',layout="wide")
 
-###### Placeholder data (formerly from Courses.py) ######
+###### Placeholder data (formerly from courses.py) ######
 # IMPORTANT: Populate these lists with your actual data!
 ds_course = [
     ("Data Science Bootcamp", "http://example.com/ds_bootcamp"),
@@ -433,6 +433,12 @@ def run():
         with open( "./style.css" ) as css:
             st.markdown( f'<style>{css.read()}</style>' , unsafe_allow_html= True)
             st.title("🚀 AI Resume Analyzer & Job Matchmaker")
+            left_co, cent_co,last_co = st.columns(3)
+            with cent_co:
+                img = Image.open('./logo/mantap_logo.jpeg')
+                st.image(img)
+
+
             st.markdown('''<h5 style='text-align: left; color: #021659;'> Upload Your Resume (PDF or DOCX) and Get Smart Insights!</h5>''', unsafe_allow_html=True)
 
             pdf_file = st.file_uploader("Choose your Resume", type=["pdf", "docx"])

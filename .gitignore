@@ -1,2 +1,4 @@
 .env
 **/**/__pycache__
+**/**/Uploaded_Resumes
+**/**/.DS_Store
