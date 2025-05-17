@@ -27,6 +27,9 @@ import csv
 import json
 from openai import OpenAI
 from docx import Document # For .docx file processing
+from dotenv import load_dotenv
+
+st.set_page_config(layout="wide")
 
 ###### Placeholder data (formerly from Courses.py) ######
 # IMPORTANT: Populate these lists with your actual data!
@@ -62,6 +65,9 @@ interview_videos = [
     "https://www.youtube.com/watch?v=eIMR82oO2Dc&ab_channel=GoogleStudents"  # Example video
 ]
 
+load_dotenv()
+
+# Alibaba Cloud API endpoints and configuration
 ALIBABA_API_KEY = os.getenv('API_KEY')
 ALIBABA_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 
@@ -421,131 +427,135 @@ def run():
         os.makedirs('./Uploaded_Resumes')
 
     ###### CODE FOR CLIENT SIDE (USER) ######
-    if 'Analyze Resume':
-        st.title("🚀 AI Resume Analyzer & Job Matchmaker")
-        st.markdown('''<h5 style='text-align: left; color: #021659;'> Upload Your Resume (PDF or DOCX) and Get Smart Insights!</h5>''', unsafe_allow_html=True)
+    _, col, _ = st.columns([0.1, 0.8, 0.1])
 
-        pdf_file = st.file_uploader("Choose your Resume", type=["pdf", "docx"])
-        if pdf_file is not None:
-            # Save uploaded file
-            save_file_path = os.path.join('./Uploaded_Resumes/', secrets.token_hex(8) + "_" + pdf_file.name)
-            pdf_name_original = pdf_file.name
-            with open(save_file_path, "wb") as f:
-                f.write(pdf_file.getbuffer())
+    with col:
+        with open( "./style.css" ) as css:
+            st.markdown( f'<style>{css.read()}</style>' , unsafe_allow_html= True)
+            st.title("🚀 AI Resume Analyzer & Job Matchmaker")
+            st.markdown('''<h5 style='text-align: left; color: #021659;'> Upload Your Resume (PDF or DOCX) and Get Smart Insights!</h5>''', unsafe_allow_html=True)
 
-            with st.spinner('Analyzing your resume... This may take a moment.'):
-                # Display PDF (if it's a PDF)
-                if save_file_path.endswith('.pdf'):
-                    show_pdf(save_file_path)
+            pdf_file = st.file_uploader("Choose your Resume", type=["pdf", "docx"])
+            if pdf_file is not None:
+                # Save uploaded file
+                save_file_path = os.path.join('./Uploaded_Resumes/', secrets.token_hex(8) + "_" + pdf_file.name)
+                pdf_name_original = pdf_file.name
+                with open(save_file_path, "wb") as f:
+                    f.write(pdf_file.getbuffer())
 
-                parser = ResumeParser(save_file_path)
-                resume_data = parser.get_extracted_data()
-                resume_text_content = parser.resume_text
+                with st.spinner('Analyzing your resume... This may take a moment.'):
+                    # Display PDF (if it's a PDF)
+                    if save_file_path.endswith('.pdf'):
+                        show_pdf(save_file_path)
 
-            if resume_data and resume_text_content:
-                st.header("**Resume Insights ✨**")
-                st.success(f"Hello {resume_data.get('name', 'User')}!")
+                    parser = ResumeParser(save_file_path)
+                    resume_data = parser.get_extracted_data()
+                    resume_text_content = parser.resume_text
 
-                # Display Basic Info
-                st.subheader("**Basic Information Extracted**")
-                basic_info_cols = st.columns(2)
-                basic_info_cols[0].text(f"Name: {resume_data.get('name', 'N/A')}")
-                basic_info_cols[0].text(f"Email: {resume_data.get('email', 'N/A')}")
-                basic_info_cols[1].text(f"Contact: {resume_data.get('mobile_number', 'N/A')}")
-                basic_info_cols[1].text(f"Degree: {str(resume_data.get('degree', 'N/A'))}")
-                st.text(f"Resume Pages: {str(resume_data.get('no_of_pages', 'N/A'))}")
+                if resume_data and resume_text_content:
+                    st.header("**Resume Insights ✨**")
+                    st.success(f"Hello {resume_data.get('name', 'User')}!")
 
-                # LLM Analysis for Job Matching, Feedback, etc.
-                with st.spinner("Getting AI-powered analysis and recommendations..."):
-                    analysis_result = analyze_resume_for_jobs_and_get_feedback(resume_text_content, resume_data.get('skills', []))
-                    resume_summary = summarize_resume_llm(resume_text_content)
-                    career_paths_data = get_career_path_suggestions_llm(
-                        analysis_result.get("job_category", "NA"),
-                        analysis_result.get("experience_level", "Fresher"),
-                        resume_data.get('skills', [])
-                    )
+                    # Display Basic Info
+                    st.subheader("**Basic Information Extracted**")
+                    basic_info_cols = st.columns(2)
+                    basic_info_cols[0].text(f"Name: {resume_data.get('name', 'N/A')}")
+                    basic_info_cols[0].text(f"Email: {resume_data.get('email', 'N/A')}")
+                    basic_info_cols[1].text(f"Contact: {resume_data.get('mobile_number', 'N/A')}")
+                    basic_info_cols[1].text(f"Degree: {str(resume_data.get('degree', 'N/A'))}")
+                    st.text(f"Resume Pages: {str(resume_data.get('no_of_pages', 'N/A'))}")
 
-                st.subheader("**AI Analysis & Recommendations 🤖**")
-                reco_field = analysis_result.get("job_category", "NA")
-                cand_level = analysis_result.get("experience_level", "Fresher")
-                resume_score_val = analysis_result.get("resume_score", 50)
-                match_explanation_text = analysis_result.get("match_explanation", "No explanation available.")
+                    # LLM Analysis for Job Matching, Feedback, etc.
+                    with st.spinner("Getting AI-powered analysis and recommendations..."):
+                        analysis_result = analyze_resume_for_jobs_and_get_feedback(resume_text_content, resume_data.get('skills', []))
+                        resume_summary = summarize_resume_llm(resume_text_content)
+                        career_paths_data = get_career_path_suggestions_llm(
+                            analysis_result.get("job_category", "NA"),
+                            analysis_result.get("experience_level", "Fresher"),
+                            resume_data.get('skills', [])
+                        )
 
-                # Display Experience Level
-                level_color_map = {"Fresher": "#d73b5c", "Intermediate": "#1ed760", "Experienced": "#fba171", "Junior": "#5dade2", "Senior": "#f39c12"}
-                level_color = level_color_map.get(cand_level, "#7f8c8d") # Default color
-                st.markdown(f'''<h4 style='text-align: left; color: {level_color};'>You seem to be at an {cand_level} level.</h4>''', unsafe_allow_html=True)
+                    st.subheader("**AI Analysis & Recommendations 🤖**")
+                    reco_field = analysis_result.get("job_category", "NA")
+                    cand_level = analysis_result.get("experience_level", "Fresher")
+                    resume_score_val = analysis_result.get("resume_score", 50)
+                    match_explanation_text = analysis_result.get("match_explanation", "No explanation available.")
 
-                # Display Resume Score (example with progress bar)
-                st.write(f"**Overall Resume Score:** {resume_score_val}/100")
-                st.progress(int(resume_score_val))
+                    # Display Experience Level
+                    level_color_map = {"Fresher": "#d73b5c", "Intermediate": "#1ed760", "Experienced": "#fba171", "Junior": "#5dade2", "Senior": "#f39c12"}
+                    level_color = level_color_map.get(cand_level, "#7f8c8d") # Default color
+                    st.markdown(f'''<h4 style='text-align: left; color: {level_color};'>You seem to be at an {cand_level} level.</h4>''', unsafe_allow_html=True)
 
-                # Display Resume Summary
-                st.subheader("**Resume Summary 📜**")
-                st.markdown(f"> {resume_summary}")
+                    # Display Resume Score (example with progress bar)
+                    st.write(f"**Overall Resume Score:** {resume_score_val}/100")
+                    st.progress(int(resume_score_val))
 
-                # Skills Analysis and Recommendation
-                st.subheader("**Skills Analysis & Recommendations 💡**")
-                st_tags(label='### Your Extracted Skills:', text='Review your skills below.', value=resume_data.get('skills', []), key='extracted_skills_display')
+                    # Display Resume Summary
+                    st.subheader("**Resume Summary 📜**")
+                    st.markdown(f"> {resume_summary}")
 
-                if reco_field != "NA" and reco_field != "Other":
-                    st.success(f"**Our analysis suggests you are a good fit for roles in: {reco_field}**")
-                    st.markdown(f"**Reasoning:** *{match_explanation_text}*")
+                    # Skills Analysis and Recommendation
+                    st.subheader("**Skills Analysis & Recommendations 💡**")
+                    st_tags(label='### Your Extracted Skills:', text='Review your skills below.', value=resume_data.get('skills', []), key='extracted_skills_display')
 
-                    recommended_skills_list = recommend_skills(reco_field)
-                    st_tags(label='### Recommended Skills to Add/Highlight:', text='Consider these skills for your target roles.', value=recommended_skills_list, key='recommended_skills_display')
-                    st.markdown('''<h5 style='text-align: left; color: #1ed760;'>Adding relevant skills can significantly boost🚀 your job prospects💼!</h5>''', unsafe_allow_html=True)
+                    if reco_field != "NA" and reco_field != "Other":
+                        st.success(f"**Our analysis suggests you are a good fit for roles in: {reco_field}**")
+                        st.markdown(f"**Reasoning:** *{match_explanation_text}*")
 
-                    course_list_for_reco_field = get_course_recommendations(reco_field)
-                    recommended_courses = course_recommender(course_list_for_reco_field)
+                        recommended_skills_list = recommend_skills(reco_field)
+                        st_tags(label='### Recommended Skills to Add/Highlight:', text='Consider these skills for your target roles.', value=recommended_skills_list, key='recommended_skills_display')
+                        st.markdown('''<h5 style='text-align: left; color: #1ed760;'>Adding relevant skills can significantly boost🚀 your job prospects💼!</h5>''', unsafe_allow_html=True)
+
+                        course_list_for_reco_field = get_course_recommendations(reco_field)
+                        recommended_courses = course_recommender(course_list_for_reco_field)
+                    else:
+                        st.warning(f"**Job Category:** {reco_field if reco_field != 'NA' else 'Could not confidently determine a specific job category.'}")
+                        st.markdown(f"**Note:** *{match_explanation_text}*")
+                        recommended_skills_list = ["Focus on foundational skills relevant to your general interests."]
+                        st_tags(label='### General Skill Recommendations:', text='Consider these general skills.', value=recommended_skills_list, key='general_skills_display')
+                        recommended_courses = ["General professional development courses."]
+
+                    # Resume Improvement Tips
+                    st.subheader("**Resume Improvement Tips 🥂**")
+                    improvement_reasons_list = analysis_result.get("improvement_reasons", [])
+                    if improvement_reasons_list:
+                        for i, reason in enumerate(improvement_reasons_list, 1):
+                            st.markdown(f"**{i}.** {reason}")
+                    else:
+                        st.info("No specific improvement tips generated, or resume is looking good!")
+
+                    # Career Path Suggestions
+                    st.subheader("**Potential Career Paths 🧭**")
+                    if career_paths_data and career_paths_data.get("career_paths"):
+                        for path in career_paths_data["career_paths"]:
+                            st.markdown(f"**Path:** {path.get('path_title', 'N/A')}")
+                            if path.get("focus_areas"):
+                                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;*Focus on: {', '.join(path['focus_areas'])}*")
+                    else:
+                        st.info("Could not generate specific career path suggestions at this time.")
+
+                    # Bonus Videos
+                    st.markdown("---")
+                    st.header("**Bonus Content 🎁**")
+                    vid_cols = st.columns(2)
+                    if resume_videos:
+                        vid_cols[0].subheader("Resume Writing Tips")
+                        vid_cols[0].video(random.choice(resume_videos))  # Pass the URL directly
+                    if interview_videos:
+                        vid_cols[1].subheader("Interview Tips")
+                        vid_cols[1].video(random.choice(interview_videos))
+
+                    # Clean up uploaded file after processing
+                    try:
+                        os.remove(save_file_path)
+                    except Exception as e:
+                        st.warning(f"Could not delete temporary file {save_file_path}: {e}")
                 else:
-                    st.warning(f"**Job Category:** {reco_field if reco_field != 'NA' else 'Could not confidently determine a specific job category.'}")
-                    st.markdown(f"**Note:** *{match_explanation_text}*")
-                    recommended_skills_list = ["Focus on foundational skills relevant to your general interests."]
-                    st_tags(label='### General Skill Recommendations:', text='Consider these general skills.', value=recommended_skills_list, key='general_skills_display')
-                    recommended_courses = ["General professional development courses."]
-
-                # Resume Improvement Tips
-                st.subheader("**Resume Improvement Tips 🥂**")
-                improvement_reasons_list = analysis_result.get("improvement_reasons", [])
-                if improvement_reasons_list:
-                    for i, reason in enumerate(improvement_reasons_list, 1):
-                        st.markdown(f"**{i}.** {reason}")
-                else:
-                    st.info("No specific improvement tips generated, or resume is looking good!")
-
-                # Career Path Suggestions
-                st.subheader("**Potential Career Paths 🧭**")
-                if career_paths_data and career_paths_data.get("career_paths"):
-                    for path in career_paths_data["career_paths"]:
-                        st.markdown(f"**Path:** {path.get('path_title', 'N/A')}")
-                        if path.get("focus_areas"):
-                            st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;*Focus on: {', '.join(path['focus_areas'])}*")
-                else:
-                    st.info("Could not generate specific career path suggestions at this time.")
-
-                # Bonus Videos
-                st.markdown("---")
-                st.header("**Bonus Content 🎁**")
-                vid_cols = st.columns(2)
-                if resume_videos:
-                    vid_cols[0].subheader("Resume Writing Tips")
-                    vid_cols[0].video(random.choice(resume_videos))  # Pass the URL directly
-                if interview_videos:
-                    vid_cols[1].subheader("Interview Tips")
-                    vid_cols[1].video(random.choice(interview_videos))
-
-                # Clean up uploaded file after processing
-                try:
-                    os.remove(save_file_path)
-                except Exception as e:
-                    st.warning(f"Could not delete temporary file {save_file_path}: {e}")
-            else:
-                st.error('Something went wrong... Unable to analyze the resume. The file might be corrupted, password-protected, or in an unreadable format.')
-                if not resume_text_content:
-                    st.error("Could not extract text from the uploaded file.")
-                if not resume_data and resume_text_content: # Text extracted but LLM failed
-                    st.error("Extracted text from resume, but failed to get structured data from LLM.")
+                    st.error('Something went wrong... Unable to analyze the resume. The file might be corrupted, password-protected, or in an unreadable format.')
+                    if not resume_text_content:
+                        st.error("Could not extract text from the uploaded file.")
+                    if not resume_data and resume_text_content: # Text extracted but LLM failed
+                        st.error("Extracted text from resume, but failed to get structured data from LLM.")
 
 # Run the app
 if __name__ == "__main__":
