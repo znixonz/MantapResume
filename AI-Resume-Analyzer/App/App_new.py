@@ -32,7 +32,7 @@ import json
 from openai import OpenAI
 
 # Alibaba Cloud API endpoints and configuration
-ALIBABA_API_KEY = "######"  # Your API key
+ALIBABA_API_KEY = "#####"  # Your API key
 ALIBABA_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 
 nltk.download('stopwords')
@@ -337,24 +337,24 @@ def run():
     # (Logo, Heading, Sidebar etc)
     # img = Image.open('./Logo/RESUM.png')
     # st.image(img)
-    st.sidebar.markdown("# Choose Something...")
-    activities = ["User", "Feedback", "About", "Admin"]
-    choice = st.sidebar.selectbox("Choose among the given options:", activities)
-    link = '<b>Built with 🤍 by <a href="https://dnoobnerd.netlify.app/" style="text-decoration: none; color: #021659;">Mantap</a> and Modified to use Alibaba Cloud LLM</b>' 
-    st.sidebar.markdown(link, unsafe_allow_html=True)
-    st.sidebar.markdown('''
-        <!-- site visitors -->
-        <div id="sfct2xghr8ak6lfqt3kgru233378jya38dy" hidden></div>
-        <noscript>
-            <a href="https://www.freecounterstat.com" title="hit counter">
-                <img src="https://counter9.stat.ovh/private/freecounterstat.php?c=t2xghr8ak6lfqt3kgru233378jya38dy" border="0" title="hit counter" alt="hit counter">
-            </a>
-        </noscript>
-        <p>Visitors <img src="https://counter9.stat.ovh/private/freecounterstat.php?c=t2xghr8ak6lfqt3kgru233378jya38dy" title="Free Counter" Alt="web counter" width="60px" border="0" /></p>
-    ''', unsafe_allow_html=True)
+    # st.sidebar.markdown("# Choose Something...")
+    # activities = ["User", "Feedback", "About", "Admin"]
+    # choice = st.sidebar.selectbox("Choose among the given options:", activities)
+    # link = '<b>Built with 🤍 by <a href="https://dnoobnerd.netlify.app/" style="text-decoration: none; color: #021659;">Mantap</a> and Modified to use Alibaba Cloud LLM</b>' 
+    # st.sidebar.markdown(link, unsafe_allow_html=True)
+    # st.sidebar.markdown('''
+    #     <!-- site visitors -->
+    #     <div id="sfct2xghr8ak6lfqt3kgru233378jya38dy" hidden></div>
+    #     <noscript>
+    #         <a href="https://www.freecounterstat.com" title="hit counter">
+    #             <img src="https://counter9.stat.ovh/private/freecounterstat.php?c=t2xghr8ak6lfqt3kgru233378jya38dy" border="0" title="hit counter" alt="hit counter">
+    #         </a>
+    #     </noscript>
+    #     <p>Visitors <img src="https://counter9.stat.ovh/private/freecounterstat.php?c=t2xghr8ak6lfqt3kgru233378jya38dy" title="Free Counter" Alt="web counter" width="60px" border="0" /></p>
+    # ''', unsafe_allow_html=True)
 
     ###### CODE FOR CLIENT SIDE (USER) ######
-    if choice == 'User':
+    if 'User':
         
         # Collecting Miscellaneous Information
         act_name = "N/A"
@@ -481,106 +481,106 @@ def run():
 
 
     ###### CODE FOR FEEDBACK SIDE ######
-    elif choice == 'Feedback':   
-        ts = time.time()
-        cur_date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
-        cur_time = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
-        timestamp = str(cur_date+'_'+cur_time)
+    # elif choice == 'Feedback':   
+    #     ts = time.time()
+    #     cur_date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
+    #     cur_time = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
+    #     timestamp = str(cur_date+'_'+cur_time)
 
-        with st.form("my_form"):
-            st.write("Feedback form")            
-            feed_name = st.text_input('Name')
-            feed_email = st.text_input('Email')
-            feed_score = st.slider('Rate Us From 1 - 5', 1, 5)
-            comments = st.text_input('Comments')
-            submitted = st.form_submit_button("Submit")
-            if submitted:
-                insertf_data(feed_name, feed_email, feed_score, comments, timestamp)    
-                st.success("Thanks! Your Feedback was recorded.")
-                st.balloons()    
+    #     with st.form("my_form"):
+    #         st.write("Feedback form")            
+    #         feed_name = st.text_input('Name')
+    #         feed_email = st.text_input('Email')
+    #         feed_score = st.slider('Rate Us From 1 - 5', 1, 5)
+    #         comments = st.text_input('Comments')
+    #         submitted = st.form_submit_button("Submit")
+    #         if submitted:
+    #             insertf_data(feed_name, feed_email, feed_score, comments, timestamp)    
+    #             st.success("Thanks! Your Feedback was recorded.")
+    #             st.balloons()    
 
-        # Load feedback data
-        if os.path.exists('user_feedback.csv'):
-            df_feedback = pd.read_csv('user_feedback.csv')
-            st.header("**User's Feedback Data**")
-            st.dataframe(df_feedback)
-        else:
-            st.warning("No feedback data found.")
+    #     # Load feedback data
+    #     if os.path.exists('user_feedback.csv'):
+    #         df_feedback = pd.read_csv('user_feedback.csv')
+    #         st.header("**User's Feedback Data**")
+    #         st.dataframe(df_feedback)
+    #     else:
+    #         st.warning("No feedback data found.")
 
-        if os.path.exists('user_feedback.csv'):
-            plotfeed_data = pd.read_csv('user_feedback.csv')
-            labels = plotfeed_data.feed_score.unique()
-            values = plotfeed_data.feed_score.value_counts()
-            fig = px.pie(values=values, names=labels, title="Chart of User Rating Score From 1 - 5", color_discrete_sequence=px.colors.sequential.Aggrnyl)
-            st.plotly_chart(fig)
+    #     if os.path.exists('user_feedback.csv'):
+    #         plotfeed_data = pd.read_csv('user_feedback.csv')
+    #         labels = plotfeed_data.feed_score.unique()
+    #         values = plotfeed_data.feed_score.value_counts()
+    #         fig = px.pie(values=values, names=labels, title="Chart of User Rating Score From 1 - 5", color_discrete_sequence=px.colors.sequential.Aggrnyl)
+    #         st.plotly_chart(fig)
 
 
     ###### CODE FOR ABOUT PAGE ######
-    elif choice == 'About':   
-        st.subheader("**About The Tool - AI RESUME ANALYZER with Alibaba Cloud LLM**")
-        st.markdown('''
-            <p align='justify'>A tool which analyzes resumes using Alibaba Cloud's Large Language Model technology to extract information and provide personalized recommendations.</p>
-            <p align="justify"><b>How to use it: -</b><br/><br/>
-            <b>User -</b><br/>In the Side Bar choose yourself as user and fill the required fields and upload your resume in pdf format.<br/>
-            The resume will be analyzed by a powerful language model to extract your skills, experience, and provide recommendations.<br/><br/>
-            <b>Feedback -</b><br/>A place where user can suggest some feedback about the tool.<br/><br/>
-            <b>Admin -</b><br/>For login use <b>admin</b> as username and <b>admin@resume-analyzer</b> as password.<br/>
-            It will load all the required stuffs and perform analysis.
-            </p><br/><br/>
-            <p align="justify">Built with 🤍 by <a href="https://dnoobnerd.netlify.app/">Mantap</a> through <a href="https://www.linkedin.com/in/mrbriit/">Dr Bright --(Data Scientist)</a><br>
-            Modified to use Alibaba Cloud LLM API</p>
-        ''', unsafe_allow_html=True)
+    # elif choice == 'About':   
+    #     st.subheader("**About The Tool - AI RESUME ANALYZER with Alibaba Cloud LLM**")
+    #     st.markdown('''
+    #         <p align='justify'>A tool which analyzes resumes using Alibaba Cloud's Large Language Model technology to extract information and provide personalized recommendations.</p>
+    #         <p align="justify"><b>How to use it: -</b><br/><br/>
+    #         <b>User -</b><br/>In the Side Bar choose yourself as user and fill the required fields and upload your resume in pdf format.<br/>
+    #         The resume will be analyzed by a powerful language model to extract your skills, experience, and provide recommendations.<br/><br/>
+    #         <b>Feedback -</b><br/>A place where user can suggest some feedback about the tool.<br/><br/>
+    #         <b>Admin -</b><br/>For login use <b>admin</b> as username and <b>admin@resume-analyzer</b> as password.<br/>
+    #         It will load all the required stuffs and perform analysis.
+    #         </p><br/><br/>
+    #         <p align="justify">Built with 🤍 by <a href="https://dnoobnerd.netlify.app/">Mantap</a> through <a href="https://www.linkedin.com/in/mrbriit/">Dr Bright --(Data Scientist)</a><br>
+    #         Modified to use Alibaba Cloud LLM API</p>
+    #     ''', unsafe_allow_html=True)
 
 
     ###### CODE FOR ADMIN SIDE (ADMIN) ######
-    elif choice == 'Admin':
-        st.success('Welcome to Admin Side')
-        ad_user = st.text_input("Username")
-        ad_password = st.text_input("Password", type='password')
+    # elif choice == 'Admin':
+    #     st.success('Welcome to Admin Side')
+    #     ad_user = st.text_input("Username")
+    #     ad_password = st.text_input("Password", type='password')
 
-        if st.button('Login'):
-            if ad_user == 'admin' and ad_password == 'admin@resume-analyzer':
+    #     if st.button('Login'):
+    #         if ad_user == 'admin' and ad_password == 'admin@resume-analyzer':
 
-                if os.path.exists('user_data.csv'):
-                    df = pd.read_csv('user_data.csv')
-                    st.header("**User's Data**")
-                    st.dataframe(df)
-                    st.markdown(get_csv_download_link(df,'User_Data.csv','Download Report'), unsafe_allow_html=True)
-                else:
-                    st.warning("No user data found.")
+    #             if os.path.exists('user_data.csv'):
+    #                 df = pd.read_csv('user_data.csv')
+    #                 st.header("**User's Data**")
+    #                 st.dataframe(df)
+    #                 st.markdown(get_csv_download_link(df,'User_Data.csv','Download Report'), unsafe_allow_html=True)
+    #             else:
+    #                 st.warning("No user data found.")
 
-                if os.path.exists('user_feedback.csv'):
-                    df_feedback = pd.read_csv('user_feedback.csv')
-                    st.header("**User Feedback Data**")
-                    st.dataframe(df_feedback)
-                else:
-                    st.warning("No feedback data found.")
+    #             if os.path.exists('user_feedback.csv'):
+    #                 df_feedback = pd.read_csv('user_feedback.csv')
+    #                 st.header("**User Feedback Data**")
+    #                 st.dataframe(df_feedback)
+    #             else:
+    #                 st.warning("No feedback data found.")
 
-                # Pie charts for analytics
-                if os.path.exists('user_data.csv'):
-                    plot_data = pd.read_csv('user_data.csv')
-                    labels = plot_data.resume_score.unique()
-                    values = plot_data.resume_score.value_counts()
-                    fig = px.pie(df, values=values, names=labels, title='From 1 to 100 💯', color_discrete_sequence=px.colors.sequential.Agsunset)
-                    st.plotly_chart(fig)
+    #             # Pie charts for analytics
+    #             if os.path.exists('user_data.csv'):
+    #                 plot_data = pd.read_csv('user_data.csv')
+    #                 labels = plot_data.resume_score.unique()
+    #                 values = plot_data.resume_score.value_counts()
+    #                 fig = px.pie(df, values=values, names=labels, title='From 1 to 100 💯', color_discrete_sequence=px.colors.sequential.Agsunset)
+    #                 st.plotly_chart(fig)
 
-                    labels = plot_data.city.unique()
-                    values = plot_data.city.value_counts()
-                    fig = px.pie(df, values=values, names=labels, title='Usage Based On City 🌆', color_discrete_sequence=px.colors.sequential.Jet)
-                    st.plotly_chart(fig)
+    #                 labels = plot_data.city.unique()
+    #                 values = plot_data.city.value_counts()
+    #                 fig = px.pie(df, values=values, names=labels, title='Usage Based On City 🌆', color_discrete_sequence=px.colors.sequential.Jet)
+    #                 st.plotly_chart(fig)
 
-                    labels = plot_data.state.unique()
-                    values = plot_data.state.value_counts()
-                    fig = px.pie(df, values=values, names=labels, title='Usage Based on State 🚉', color_discrete_sequence=px.colors.sequential.PuBu_r)
-                    st.plotly_chart(fig)
+    #                 labels = plot_data.state.unique()
+    #                 values = plot_data.state.value_counts()
+    #                 fig = px.pie(df, values=values, names=labels, title='Usage Based on State 🚉', color_discrete_sequence=px.colors.sequential.PuBu_r)
+    #                 st.plotly_chart(fig)
 
-                    labels = plot_data.country.unique()
-                    values = plot_data.country.value_counts()
-                    fig = px.pie(df, values=values, names=labels, title='Usage Based on Country 🌏', color_discrete_sequence=px.colors.sequential.Purpor_r)
-                    st.plotly_chart(fig)
+    #                 labels = plot_data.country.unique()
+    #                 values = plot_data.country.value_counts()
+    #                 fig = px.pie(df, values=values, names=labels, title='Usage Based on Country 🌏', color_discrete_sequence=px.colors.sequential.Purpor_r)
+    #                 st.plotly_chart(fig)
 
-            else:
-                st.error("Wrong ID & Password Provided")
+    #         else:
+    #             st.error("Wrong ID & Password Provided")
 
 # Run the app
 if __name__ == "__main__":
