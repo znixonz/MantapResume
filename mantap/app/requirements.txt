@@ -92,3 +92,4 @@ wasabi
 watchdog
 zipp
 python-dotenv
+python-docx
