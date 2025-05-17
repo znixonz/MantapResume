@@ -436,7 +436,7 @@ def run():
             st.markdown("<h1 style='text-align: center;'>🚀 AI Resume Analyzer & Job Matchmaker</h1>", unsafe_allow_html=True)
             left_co, cent_co,last_co = st.columns([0.2, 0.6, 0.2])
             with cent_co:
-                img = Image.open('./logo/mantap_logo.jpeg')
+                img = Image.open('./logo/header.png')
                 st.image(img, use_container_width=True)
 
             st.text("") 
