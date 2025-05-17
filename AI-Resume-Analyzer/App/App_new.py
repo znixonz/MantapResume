@@ -41,6 +41,7 @@ ALIBABA_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 
 nltk.download('stopwords')
 
+st.set_page_config(layout="wide")
 ###### Alibaba Cloud LLM Functions ######
 
 def call_alibaba_llm(prompt, max_tokens=2048, system_prompt="You are a helpful assistant."):
@@ -328,12 +329,12 @@ def insertf_data(feed_name, feed_email, feed_score, comments, Timestamp):
         writer.writerow([feed_name, feed_email, feed_score, comments, Timestamp])
 
 
-###### Setting Page Configuration (favicon, Logo, Title) ######
-st.set_page_config(
-   page_title="Mantap Resume Analyzer",
-   page_icon='./Logo/recommend.png',
-   layout="wide",
-)
+# ###### Setting Page Configuration (favicon, Logo, Title) ######
+# st.set_page_config(
+#    page_title="Mantap Resume Analyzer",
+#    page_icon='./Logo/recommend.png',
+#    layout="wide",
+# )
 
 
 ###### Main function run() ######
@@ -359,233 +360,237 @@ def run():
     # ''', unsafe_allow_html=True)
 
     ###### CODE FOR CLIENT SIDE (USER) ######
-    if 'User':
-        
-        # Collecting Miscellaneous Information
-        act_name = "N/A"
-        act_mail = "N/A"
-        act_mob = "N/A"
-        sec_token = secrets.token_urlsafe(12)
-        host_name = "N/A"
-        ip_add = "N/A"
-        dev_user = "N/A"
-        os_name_ver = "N/A"
-        latlong = "N/A"
-        city = "N/A"
-        state = "N/A"
-        country = "N/A"
+    _, col, _ = st.columns([0.1, 0.8, 0.1])
 
-        # Upload Resume
-        st.markdown('''<h5 style='text-align: left; color: #021659;'> Upload Your Resume, And Get Smart Recommendations</h5>''', unsafe_allow_html=True)
-        pdf_file = st.file_uploader("Choose your Resume", type=["pdf"])
-        if pdf_file is not None:
-            with st.spinner('Hang On While We Cook Magic For You...'):
-                time.sleep(4)
+    with col:
+        with open( "./style.css" ) as css:
+            st.markdown( f'<style>{css.read()}</style>' , unsafe_allow_html= True)
+            st.header("Mantap Resume Analyzer")
+            # Collecting Miscellaneous Information
+            act_name = "N/A"
+            act_mail = "N/A"
+            act_mob = "N/A"
+            sec_token = secrets.token_urlsafe(12)
+            host_name = "N/A"
+            ip_add = "N/A"
+            dev_user = "N/A"
+            os_name_ver = "N/A"
+            latlong = "N/A"
+            city = "N/A"
+            state = "N/A"
+            country = "N/A"
 
-            save_image_path = './Uploaded_Resumes/'+pdf_file.name
-            pdf_name = pdf_file.name
-            with open(save_image_path, "wb") as f:
-                f.write(pdf_file.getbuffer())
-            show_pdf(save_image_path)
-            
-            # Use our new ResumeParser class with Alibaba Cloud LLM
-            parser = ResumeParser(save_image_path)
-            resume_data = parser.get_extracted_data()
-            resume_text = parser.resume_text
-            
-            if resume_data:
-                st.header("**Resume Analysis 🤘**")
-                st.success("Hello "+ resume_data['name'])
-                st.subheader("**Your Basic info 👀**")
-                try:
-                    st.text('Name: '+resume_data['name'])
-                    st.text('Email: ' + resume_data['email'])
-                    st.text('Contact: ' + resume_data['mobile_number'])
-                    st.text('Degree: '+str(resume_data['degree']))                    
-                    st.text('Resume pages: '+str(resume_data['no_of_pages']))
-                except:
-                    pass
+            # Upload Resume
+            st.markdown('''<h5 style='text-align: left; color: #021659;'> Upload Your Resume, And Get Smart Recommendations</h5>''', unsafe_allow_html=True)
+            pdf_file = st.file_uploader("Choose your Resume", type=["pdf"])
+            if pdf_file is not None:
+                with st.spinner('Hang On While We Cook Magic For You...'):
+                    time.sleep(4)
 
-                # Now use the LLM to analyze the resume for job matching and experience level
-                analysis_result = analyze_resume_for_jobs(resume_text, resume_data['skills'])
+                save_image_path = './Uploaded_Resumes/'+pdf_file.name
+                pdf_name = pdf_file.name
+                with open(save_image_path, "wb") as f:
+                    f.write(pdf_file.getbuffer())
+                show_pdf(save_image_path)
                 
-                reco_field = analysis_result.get("job_category", "NA")
-                cand_level = analysis_result.get("experience_level", "Fresher")
-                resume_score = analysis_result.get("resume_score", 50)
+                # Use our new ResumeParser class with Alibaba Cloud LLM
+                parser = ResumeParser(save_image_path)
+                resume_data = parser.get_extracted_data()
+                resume_text = parser.resume_text
                 
-                # Display experience level
-                if cand_level == "Fresher":
-                    st.markdown('''<h4 style='text-align: left; color: #d73b5c;'>You are at Fresher level!</h4>''', unsafe_allow_html=True)
-                elif cand_level == "Intermediate":
-                    st.markdown('''<h4 style='text-align: left; color: #1ed760;'>You are at intermediate level!</h4>''', unsafe_allow_html=True)
-                elif cand_level == "Experienced":
-                    st.markdown('''<h4 style='text-align: left; color: #fba171;'>You are at experience level!</h4>''', unsafe_allow_html=True)
+                if resume_data:
+                    st.header("**Resume Analysis 🤘**")
+                    st.success("Hello "+ resume_data['name'])
+                    st.subheader("**Your Basic info 👀**")
+                    try:
+                        st.text('Name: '+resume_data['name'])
+                        st.text('Email: ' + resume_data['email'])
+                        st.text('Contact: ' + resume_data['mobile_number'])
+                        st.text('Degree: '+str(resume_data['degree']))                    
+                        st.text('Resume pages: '+str(resume_data['no_of_pages']))
+                    except:
+                        pass
 
-                ## Skills Analyzing and Recommendation
-                st.subheader("**Skills Recommendation 💡**")
-                keywords = st_tags(label='### Your Current Skills', text='See our skills recommendation below', value=resume_data['skills'], key='1')
+                    # Now use the LLM to analyze the resume for job matching and experience level
+                    analysis_result = analyze_resume_for_jobs(resume_text, resume_data['skills'])
+                    
+                    reco_field = analysis_result.get("job_category", "NA")
+                    cand_level = analysis_result.get("experience_level", "Fresher")
+                    resume_score = analysis_result.get("resume_score", 50)
+                    
+                    # Display experience level
+                    if cand_level == "Fresher":
+                        st.markdown('''<h4 style='text-align: left; color: #d73b5c;'>You are at Fresher level!</h4>''', unsafe_allow_html=True)
+                    elif cand_level == "Intermediate":
+                        st.markdown('''<h4 style='text-align: left; color: #1ed760;'>You are at intermediate level!</h4>''', unsafe_allow_html=True)
+                    elif cand_level == "Experienced":
+                        st.markdown('''<h4 style='text-align: left; color: #fba171;'>You are at experience level!</h4>''', unsafe_allow_html=True)
 
-                if reco_field != "NA":
-                    recommended_skills = recommend_skills(reco_field)
+                    ## Skills Analyzing and Recommendation
+                    st.subheader("**Skills Recommendation 💡**")
+                    keywords = st_tags(label='### Your Current Skills', text='See our skills recommendation below', value=resume_data['skills'], key='1')
+
+                    if reco_field != "NA":
+                        recommended_skills = recommend_skills(reco_field)
+                        
+                        if reco_field == "Data Science":
+                            st.success("** Our analysis says you are looking for Data Science Jobs.**")
+                        elif reco_field == "Web Development":
+                            st.success("** Our analysis says you are looking for Web Development Jobs **")
+                        elif reco_field == "Android Development":
+                            st.success("** Our analysis says you are looking for Android App Development Jobs **")
+                        elif reco_field == "IOS Development":
+                            st.success("** Our analysis says you are looking for IOS App Development Jobs **")
+                        elif reco_field == "UI-UX Development":
+                            st.success("** Our analysis says you are looking for UI-UX Development Jobs **")
+                        
+                        st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='2')
+                        st.markdown('''<h5 style='text-align: left; color: #1ed760;'>Adding this skills to resume will boost🚀 the chances of getting a Job💼</h5>''', unsafe_allow_html=True)
+                        
+                        # Get course recommendations based on field
+                        course_list = get_course_recommendations(reco_field)
+                        rec_course = course_recommender(course_list)
+                    else:
+                        st.warning("** Currently our tool only predicts and recommends for Data Science, Web, Android, IOS and UI/UX Development**")
+                        recommended_skills = ['No Recommendations']
+                        st_tags(label='### Recommended skills for you.', text='Currently No Recommendations', value=recommended_skills, key='3')
+                        st.markdown('''<h5 style='text-align: left; color: #092851;'>Maybe Available in Future Updates</h5>''', unsafe_allow_html=True)
+                        rec_course = "Sorry! Not Available for this Field"
+
+                    ## Resume Improvement Tips
+                    st.subheader("**Resume Improvement Tips 🥂**")
                     
-                    if reco_field == "Data Science":
-                        st.success("** Our analysis says you are looking for Data Science Jobs.**")
-                    elif reco_field == "Web Development":
-                        st.success("** Our analysis says you are looking for Web Development Jobs **")
-                    elif reco_field == "Android Development":
-                        st.success("** Our analysis says you are looking for Android App Development Jobs **")
-                    elif reco_field == "IOS Development":
-                        st.success("** Our analysis says you are looking for IOS App Development Jobs **")
-                    elif reco_field == "UI-UX Development":
-                        st.success("** Our analysis says you are looking for UI-UX Development Jobs **")
-                    
-                    st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='2')
-                    st.markdown('''<h5 style='text-align: left; color: #1ed760;'>Adding this skills to resume will boost🚀 the chances of getting a Job💼</h5>''', unsafe_allow_html=True)
-                    
-                    # Get course recommendations based on field
-                    course_list = get_course_recommendations(reco_field)
-                    rec_course = course_recommender(course_list)
+                    # Display the improvement reasons from the LLM analysis
+                    improvement_reasons = analysis_result.get("improvement_reasons", [])
+                    for i, reason in enumerate(improvement_reasons, 1):
+                        st.markdown(f'''<h5 style='text-align: left; color: #000000;'>{i}. {reason}</h5>''', unsafe_allow_html=True)
+
+                    # Save data to CSV
+                    ts = time.time()
+                    cur_date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
+                    cur_time = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
+                    timestamp = str(cur_date+'_'+cur_time)
+
+                    insert_data(str(sec_token), str(ip_add), host_name, dev_user, os_name_ver, str(latlong), city, state, country,
+                                act_name, act_mail, act_mob, resume_data['name'], resume_data['email'], str(resume_score),
+                                timestamp, str(resume_data['no_of_pages']), reco_field, cand_level, str(resume_data['skills']),
+                                str(recommended_skills), str(rec_course), pdf_name)
+
+                    st.header("**Bonus Video for Resume Writing Tips💡**")
+                    resume_vid = random.choice(resume_videos)
+                    st.video(resume_vid)
+
+                    st.header("**Bonus Video for Interview Tips💡**")
+                    interview_vid = random.choice(interview_videos)
+                    st.video(interview_vid)
+
+                    st.balloons()
+
                 else:
-                    st.warning("** Currently our tool only predicts and recommends for Data Science, Web, Android, IOS and UI/UX Development**")
-                    recommended_skills = ['No Recommendations']
-                    st_tags(label='### Recommended skills for you.', text='Currently No Recommendations', value=recommended_skills, key='3')
-                    st.markdown('''<h5 style='text-align: left; color: #092851;'>Maybe Available in Future Updates</h5>''', unsafe_allow_html=True)
-                    rec_course = "Sorry! Not Available for this Field"
-
-                ## Resume Improvement Tips
-                st.subheader("**Resume Improvement Tips 🥂**")
-                
-                # Display the improvement reasons from the LLM analysis
-                improvement_reasons = analysis_result.get("improvement_reasons", [])
-                for i, reason in enumerate(improvement_reasons, 1):
-                    st.markdown(f'''<h5 style='text-align: left; color: #000000;'>{i}. {reason}</h5>''', unsafe_allow_html=True)
-
-                # Save data to CSV
-                ts = time.time()
-                cur_date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
-                cur_time = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
-                timestamp = str(cur_date+'_'+cur_time)
-
-                insert_data(str(sec_token), str(ip_add), host_name, dev_user, os_name_ver, str(latlong), city, state, country,
-                            act_name, act_mail, act_mob, resume_data['name'], resume_data['email'], str(resume_score),
-                            timestamp, str(resume_data['no_of_pages']), reco_field, cand_level, str(resume_data['skills']),
-                            str(recommended_skills), str(rec_course), pdf_name)
-
-                st.header("**Bonus Video for Resume Writing Tips💡**")
-                resume_vid = random.choice(resume_videos)
-                st.video(resume_vid)
-
-                st.header("**Bonus Video for Interview Tips💡**")
-                interview_vid = random.choice(interview_videos)
-                st.video(interview_vid)
-
-                st.balloons()
-
-            else:
-                st.error('Something went wrong.. Unable to analyze the resume.')                
+                    st.error('Something went wrong.. Unable to analyze the resume.')                
 
 
-    ###### CODE FOR FEEDBACK SIDE ######
-    # elif choice == 'Feedback':   
-    #     ts = time.time()
-    #     cur_date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
-    #     cur_time = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
-    #     timestamp = str(cur_date+'_'+cur_time)
+        ###### CODE FOR FEEDBACK SIDE ######
+        # elif choice == 'Feedback':   
+        #     ts = time.time()
+        #     cur_date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
+        #     cur_time = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
+        #     timestamp = str(cur_date+'_'+cur_time)
 
-    #     with st.form("my_form"):
-    #         st.write("Feedback form")            
-    #         feed_name = st.text_input('Name')
-    #         feed_email = st.text_input('Email')
-    #         feed_score = st.slider('Rate Us From 1 - 5', 1, 5)
-    #         comments = st.text_input('Comments')
-    #         submitted = st.form_submit_button("Submit")
-    #         if submitted:
-    #             insertf_data(feed_name, feed_email, feed_score, comments, timestamp)    
-    #             st.success("Thanks! Your Feedback was recorded.")
-    #             st.balloons()    
+        #     with st.form("my_form"):
+        #         st.write("Feedback form")            
+        #         feed_name = st.text_input('Name')
+        #         feed_email = st.text_input('Email')
+        #         feed_score = st.slider('Rate Us From 1 - 5', 1, 5)
+        #         comments = st.text_input('Comments')
+        #         submitted = st.form_submit_button("Submit")
+        #         if submitted:
+        #             insertf_data(feed_name, feed_email, feed_score, comments, timestamp)    
+        #             st.success("Thanks! Your Feedback was recorded.")
+        #             st.balloons()    
 
-    #     # Load feedback data
-    #     if os.path.exists('user_feedback.csv'):
-    #         df_feedback = pd.read_csv('user_feedback.csv')
-    #         st.header("**User's Feedback Data**")
-    #         st.dataframe(df_feedback)
-    #     else:
-    #         st.warning("No feedback data found.")
+        #     # Load feedback data
+        #     if os.path.exists('user_feedback.csv'):
+        #         df_feedback = pd.read_csv('user_feedback.csv')
+        #         st.header("**User's Feedback Data**")
+        #         st.dataframe(df_feedback)
+        #     else:
+        #         st.warning("No feedback data found.")
 
-    #     if os.path.exists('user_feedback.csv'):
-    #         plotfeed_data = pd.read_csv('user_feedback.csv')
-    #         labels = plotfeed_data.feed_score.unique()
-    #         values = plotfeed_data.feed_score.value_counts()
-    #         fig = px.pie(values=values, names=labels, title="Chart of User Rating Score From 1 - 5", color_discrete_sequence=px.colors.sequential.Aggrnyl)
-    #         st.plotly_chart(fig)
-
-
-    ###### CODE FOR ABOUT PAGE ######
-    # elif choice == 'About':   
-    #     st.subheader("**About The Tool - AI RESUME ANALYZER with Alibaba Cloud LLM**")
-    #     st.markdown('''
-    #         <p align='justify'>A tool which analyzes resumes using Alibaba Cloud's Large Language Model technology to extract information and provide personalized recommendations.</p>
-    #         <p align="justify"><b>How to use it: -</b><br/><br/>
-    #         <b>User -</b><br/>In the Side Bar choose yourself as user and fill the required fields and upload your resume in pdf format.<br/>
-    #         The resume will be analyzed by a powerful language model to extract your skills, experience, and provide recommendations.<br/><br/>
-    #         <b>Feedback -</b><br/>A place where user can suggest some feedback about the tool.<br/><br/>
-    #         <b>Admin -</b><br/>For login use <b>admin</b> as username and <b>admin@resume-analyzer</b> as password.<br/>
-    #         It will load all the required stuffs and perform analysis.
-    #         </p><br/><br/>
-    #         <p align="justify">Built with 🤍 by <a href="https://dnoobnerd.netlify.app/">Mantap</a> through <a href="https://www.linkedin.com/in/mrbriit/">Dr Bright --(Data Scientist)</a><br>
-    #         Modified to use Alibaba Cloud LLM API</p>
-    #     ''', unsafe_allow_html=True)
+        #     if os.path.exists('user_feedback.csv'):
+        #         plotfeed_data = pd.read_csv('user_feedback.csv')
+        #         labels = plotfeed_data.feed_score.unique()
+        #         values = plotfeed_data.feed_score.value_counts()
+        #         fig = px.pie(values=values, names=labels, title="Chart of User Rating Score From 1 - 5", color_discrete_sequence=px.colors.sequential.Aggrnyl)
+        #         st.plotly_chart(fig)
 
 
-    ###### CODE FOR ADMIN SIDE (ADMIN) ######
-    # elif choice == 'Admin':
-    #     st.success('Welcome to Admin Side')
-    #     ad_user = st.text_input("Username")
-    #     ad_password = st.text_input("Password", type='password')
+        ###### CODE FOR ABOUT PAGE ######
+        # elif choice == 'About':   
+        #     st.subheader("**About The Tool - AI RESUME ANALYZER with Alibaba Cloud LLM**")
+        #     st.markdown('''
+        #         <p align='justify'>A tool which analyzes resumes using Alibaba Cloud's Large Language Model technology to extract information and provide personalized recommendations.</p>
+        #         <p align="justify"><b>How to use it: -</b><br/><br/>
+        #         <b>User -</b><br/>In the Side Bar choose yourself as user and fill the required fields and upload your resume in pdf format.<br/>
+        #         The resume will be analyzed by a powerful language model to extract your skills, experience, and provide recommendations.<br/><br/>
+        #         <b>Feedback -</b><br/>A place where user can suggest some feedback about the tool.<br/><br/>
+        #         <b>Admin -</b><br/>For login use <b>admin</b> as username and <b>admin@resume-analyzer</b> as password.<br/>
+        #         It will load all the required stuffs and perform analysis.
+        #         </p><br/><br/>
+        #         <p align="justify">Built with 🤍 by <a href="https://dnoobnerd.netlify.app/">Mantap</a> through <a href="https://www.linkedin.com/in/mrbriit/">Dr Bright --(Data Scientist)</a><br>
+        #         Modified to use Alibaba Cloud LLM API</p>
+        #     ''', unsafe_allow_html=True)
 
-    #     if st.button('Login'):
-    #         if ad_user == 'admin' and ad_password == 'admin@resume-analyzer':
 
-    #             if os.path.exists('user_data.csv'):
-    #                 df = pd.read_csv('user_data.csv')
-    #                 st.header("**User's Data**")
-    #                 st.dataframe(df)
-    #                 st.markdown(get_csv_download_link(df,'User_Data.csv','Download Report'), unsafe_allow_html=True)
-    #             else:
-    #                 st.warning("No user data found.")
+        ###### CODE FOR ADMIN SIDE (ADMIN) ######
+        # elif choice == 'Admin':
+        #     st.success('Welcome to Admin Side')
+        #     ad_user = st.text_input("Username")
+        #     ad_password = st.text_input("Password", type='password')
 
-    #             if os.path.exists('user_feedback.csv'):
-    #                 df_feedback = pd.read_csv('user_feedback.csv')
-    #                 st.header("**User Feedback Data**")
-    #                 st.dataframe(df_feedback)
-    #             else:
-    #                 st.warning("No feedback data found.")
+        #     if st.button('Login'):
+        #         if ad_user == 'admin' and ad_password == 'admin@resume-analyzer':
 
-    #             # Pie charts for analytics
-    #             if os.path.exists('user_data.csv'):
-    #                 plot_data = pd.read_csv('user_data.csv')
-    #                 labels = plot_data.resume_score.unique()
-    #                 values = plot_data.resume_score.value_counts()
-    #                 fig = px.pie(df, values=values, names=labels, title='From 1 to 100 💯', color_discrete_sequence=px.colors.sequential.Agsunset)
-    #                 st.plotly_chart(fig)
+        #             if os.path.exists('user_data.csv'):
+        #                 df = pd.read_csv('user_data.csv')
+        #                 st.header("**User's Data**")
+        #                 st.dataframe(df)
+        #                 st.markdown(get_csv_download_link(df,'User_Data.csv','Download Report'), unsafe_allow_html=True)
+        #             else:
+        #                 st.warning("No user data found.")
 
-    #                 labels = plot_data.city.unique()
-    #                 values = plot_data.city.value_counts()
-    #                 fig = px.pie(df, values=values, names=labels, title='Usage Based On City 🌆', color_discrete_sequence=px.colors.sequential.Jet)
-    #                 st.plotly_chart(fig)
+        #             if os.path.exists('user_feedback.csv'):
+        #                 df_feedback = pd.read_csv('user_feedback.csv')
+        #                 st.header("**User Feedback Data**")
+        #                 st.dataframe(df_feedback)
+        #             else:
+        #                 st.warning("No feedback data found.")
 
-    #                 labels = plot_data.state.unique()
-    #                 values = plot_data.state.value_counts()
-    #                 fig = px.pie(df, values=values, names=labels, title='Usage Based on State 🚉', color_discrete_sequence=px.colors.sequential.PuBu_r)
-    #                 st.plotly_chart(fig)
+        #             # Pie charts for analytics
+        #             if os.path.exists('user_data.csv'):
+        #                 plot_data = pd.read_csv('user_data.csv')
+        #                 labels = plot_data.resume_score.unique()
+        #                 values = plot_data.resume_score.value_counts()
+        #                 fig = px.pie(df, values=values, names=labels, title='From 1 to 100 💯', color_discrete_sequence=px.colors.sequential.Agsunset)
+        #                 st.plotly_chart(fig)
 
-    #                 labels = plot_data.country.unique()
-    #                 values = plot_data.country.value_counts()
-    #                 fig = px.pie(df, values=values, names=labels, title='Usage Based on Country 🌏', color_discrete_sequence=px.colors.sequential.Purpor_r)
-    #                 st.plotly_chart(fig)
+        #                 labels = plot_data.city.unique()
+        #                 values = plot_data.city.value_counts()
+        #                 fig = px.pie(df, values=values, names=labels, title='Usage Based On City 🌆', color_discrete_sequence=px.colors.sequential.Jet)
+        #                 st.plotly_chart(fig)
 
-    #         else:
-    #             st.error("Wrong ID & Password Provided")
+        #                 labels = plot_data.state.unique()
+        #                 values = plot_data.state.value_counts()
+        #                 fig = px.pie(df, values=values, names=labels, title='Usage Based on State 🚉', color_discrete_sequence=px.colors.sequential.PuBu_r)
+        #                 st.plotly_chart(fig)
+
+        #                 labels = plot_data.country.unique()
+        #                 values = plot_data.country.value_counts()
+        #                 fig = px.pie(df, values=values, names=labels, title='Usage Based on Country 🌏', color_discrete_sequence=px.colors.sequential.Purpor_r)
+        #                 st.plotly_chart(fig)
+
+        #         else:
+        #             st.error("Wrong ID & Password Provided")
 
 # Run the app
 if __name__ == "__main__":
