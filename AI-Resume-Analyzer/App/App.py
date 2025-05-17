@@ -1,6 +1,5 @@
 ###### Packages Used ######
 import streamlit as st  # core package used in this project
-import pandas as pd
 import base64
 import random
 import time
@@ -11,7 +10,8 @@ import platform
 # import geocoder # Removed for simplicity in single file, can be added back if geo-location is fully implemented
 import secrets
 import io
-import plotly.express as px  # to create visualisations at the admin session
+import plotly.express as px
+import os  # to create visualisations at the admin session
 # import plotly.graph_objects as go # Not explicitly used, can be removed if not needed for future
 # from geopy.geocoders import Nominatim # Removed for simplicity
 
@@ -124,7 +124,6 @@ def parse_llm_json_response(response_text):
             st.error(f"Failed to parse extracted LLM JSON response: {e}. Extracted string was: {cleaned_response[:200]}...")
             return None
 
-
 class ResumeParser:
     """
     Resume parsing class using Alibaba Cloud LLM model
@@ -230,7 +229,8 @@ def analyze_resume_for_jobs_and_get_feedback(resume_text, skills):
     - Data Engineer
     - Data Analyst
     - Data Science
-    - Web Development
+    - FrontEnd Development
+    - Backend Development
     - Android Development
     - IOS Development
     - UI-UX Development
@@ -297,7 +297,7 @@ def get_career_path_suggestions_llm(job_category, experience_level, skills_list)
     if not job_category or job_category == "NA": return {"career_paths": [{"path_title": "No specific path suggested due to insufficient initial analysis.", "focus_areas": []}]}
     prompt = f"""
     A candidate is currently identified as '{experience_level}' in '{job_category}' with skills: {', '.join(skills_list)}.
-    Suggest 2-3 potential career path advancements or related technical roles they could aim for.
+    Suggest 5-6 potential career path advancements or related technical roles they could aim for.
     For each suggestion, list 1-2 key areas or skills to focus on for that path.
     Return this as a JSON object with a list of suggestions.
     Ensure your entire response is ONLY a valid JSON object.
@@ -359,22 +359,13 @@ def recommend_skills(job_category):
         "Android Development": ['Kotlin', 'Java', 'Android SDK', 'XML', 'Jetpack Compose', 'Firebase', 'RESTful APIs', 'Git'],
         "IOS Development": ['Swift', 'Objective-C', 'Xcode', 'UIKit', 'SwiftUI', 'Core Data', 'Firebase', 'RESTful APIs'],
         "UI-UX Development": ['Figma', 'Adobe XD', 'Sketch', 'User Research', 'Wireframing', 'Prototyping', 'Usability Testing', 'Interaction Design', 'Visual Design'],
-        
-        # Added new job categories
         "Project Manager": ['Agile/Scrum', 'JIRA', 'MS Project', 'Risk Management', 'Stakeholder Communication', 'Budgeting', 'Resource Planning', 'Project Documentation', 'PMP Certification', 'Kanban', 'Confluence'],
-        
         "Product Manager": ['Market Research', 'User Stories', 'Product Roadmapping', 'A/B Testing', 'Product Analytics', 'Competitive Analysis', 'Wireframing', 'Product Strategy', 'Business Requirements', 'Prioritization Frameworks', 'Product Lifecycle Management'],
-        
         "Machine Learning Engineer": ['Python', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'MLOps', 'Docker', 'Kubernetes', 'Cloud ML Services (AWS SageMaker, Azure ML)', 'Feature Engineering', 'Model Deployment', 'ML Algorithms', 'Data Pipelines'],
-        
         "Fullstack Engineer": ['JavaScript/TypeScript', 'React/Angular/Vue', 'Node.js', 'Database Design', 'RESTful APIs', 'GraphQL', 'Git', 'CI/CD', 'Cloud Services', 'Docker', 'Testing Frameworks', 'System Design', 'Frontend & Backend Architecture'],
-        
         "Software Engineer": ['Data Structures', 'Algorithms', 'System Design', 'Git', 'CI/CD', 'Testing (Unit, Integration)', 'Design Patterns', 'Programming Languages (Java/Python/C++/etc.)', 'Cloud Technologies', 'Microservices', 'DevOps'],
-        
         "Data Engineer": ['SQL', 'Python', 'ETL Pipelines', 'Data Warehousing', 'Spark', 'Hadoop', 'Airflow', 'Cloud Data Services (Snowflake, BigQuery)', 'Data Modeling', 'Database Administration', 'Kafka', 'Data Governance'],
-        
         "Data Analyst": ['SQL', 'Excel (Advanced)', 'Python/R', 'Data Visualization (Tableau, PowerBI)', 'Statistical Analysis', 'A/B Testing', 'Business Intelligence Tools', 'Dashboard Design', 'Data Cleaning', 'Google Analytics', 'Business Acumen'],
-        
         "Other": ["Consider specializing further or exploring related fields based on interests."]
     }
     return skill_recommendations.get(job_category, ["No specific skill recommendations for this category yet."])
@@ -408,46 +399,6 @@ def course_recommender(course_list_for_category):
             break
     return rec_course_names
 
-###### Database Stuffs (CSV Files) ######
-USER_DATA_FILE = 'user_data.csv'
-USER_FEEDBACK_FILE = 'user_feedback.csv'
-
-def insert_data(sec_token, ip_add, host_name, dev_user, os_name_ver, latlong,
-                city, state, country, act_name, act_mail, act_mob, name, email,
-                res_score, timestamp, no_of_pages, reco_field, cand_level,
-                skills, recommended_skills_list, courses_recommended, pdf_name):
-    file_exists = os.path.isfile(USER_DATA_FILE)
-    # Ensure lists are stored as |-separated strings or similar CSV-friendly format
-    skills_str = "|".join(skills) if isinstance(skills, list) else str(skills)
-    recommended_skills_str = "|".join(recommended_skills_list) if isinstance(recommended_skills_list, list) else str(recommended_skills_list)
-    courses_str = "|".join(courses_recommended) if isinstance(courses_recommended, list) else str(courses_recommended)
-
-    with open(USER_DATA_FILE, mode='a', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        if not file_exists or os.path.getsize(USER_DATA_FILE) == 0:
-            writer.writerow([
-                'sec_token', 'ip_add', 'host_name', 'dev_user', 'os_name_ver',
-                'latlong', 'city', 'state', 'country', 'act_name', 'act_mail',
-                'act_mob', 'name', 'email', 'res_score', 'timestamp',
-                'no_of_pages', 'reco_field', 'cand_level', 'skills',
-                'recommended_skills', 'courses', 'pdf_name'
-            ])
-        writer.writerow([
-            sec_token, ip_add, host_name, dev_user, os_name_ver,
-            latlong, city, state, country, act_name, act_mail,
-            act_mob, name, email, res_score, timestamp,
-            no_of_pages, reco_field, cand_level, skills_str,
-            recommended_skills_str, courses_str, pdf_name
-        ])
-
-def insertf_data(feed_name, feed_email, feed_score, comments, timestamp_val):
-    file_exists = os.path.isfile(USER_FEEDBACK_FILE)
-    with open(USER_FEEDBACK_FILE, mode='a', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        if not file_exists or os.path.getsize(USER_FEEDBACK_FILE) == 0:
-            writer.writerow(['feed_name', 'feed_email', 'feed_score', 'comments', 'Timestamp'])
-        writer.writerow([feed_name, feed_email, feed_score, comments, timestamp_val])
-
 ###### Setting Page Configuration ######
 # Ensure the logo path is correct or remove if no logo is available
 try:
@@ -473,28 +424,6 @@ def run():
     if 'Analyze Resume':
         st.title("🚀 AI Resume Analyzer & Job Matchmaker")
         st.markdown('''<h5 style='text-align: left; color: #021659;'> Upload Your Resume (PDF or DOCX) and Get Smart Insights!</h5>''', unsafe_allow_html=True)
-
-        # Collecting User System Miscellaneous Information (Best effort, privacy-aware)
-        act_name = "N/A" # Placeholder for actual user name if collected via form
-        act_mail = "N/A" # Placeholder for actual user email if collected via form
-        act_mob = "N/A"  # Placeholder for actual user mobile if collected via form
-
-        sec_token = secrets.token_urlsafe(12)
-        try:
-            host_name = socket.gethostname()
-            ip_add = socket.gethostbyname(host_name) # Gets local IP, not public typically
-        except:
-            host_name = "N/A"
-            ip_add = "N/A"
-        try:
-            dev_user = os.getlogin()
-        except OSError:
-            dev_user = "N/A" # Fails in some environments like Docker
-        os_name_ver = f"{platform.system()} {platform.release()}"
-
-        # Geo-location is complex and privacy-sensitive, thus largely omitted for simplicity here.
-        # If using 'geocoder.ip('me')', ensure user consent and proper error handling.
-        latlong, city, state, country = "N/A", "N/A", "N/A", "N/A"
 
         pdf_file = st.file_uploader("Choose your Resume", type=["pdf", "docx"])
         if pdf_file is not None:
@@ -594,19 +523,6 @@ def run():
                             st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;*Focus on: {', '.join(path['focus_areas'])}*")
                 else:
                     st.info("Could not generate specific career path suggestions at this time.")
-
-
-                # Save data to CSV
-                ts = time.time()
-                cur_date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
-                cur_time = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
-                timestamp_str = str(cur_date+'_'+cur_time)
-
-                insert_data(str(sec_token), str(ip_add), host_name, dev_user, os_name_ver, str(latlong), city, state, country,
-                            act_name, act_mail, act_mob, resume_data.get('name', 'N/A'), resume_data.get('email', 'N/A'),
-                            str(resume_score_val), timestamp_str, str(resume_data.get('no_of_pages', 1)),
-                            reco_field, cand_level, resume_data.get('skills', []),
-                            recommended_skills_list, recommended_courses, pdf_name_original)
 
                 # Bonus Videos
                 st.markdown("---")
