@@ -31,8 +31,12 @@ import requests
 import json
 from openai import OpenAI
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Alibaba Cloud API endpoints and configuration
-ALIBABA_API_KEY = "#####"  # Your API key
+ALIBABA_API_KEY = os.getenv('API_KEY')
 ALIBABA_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 
 nltk.download('stopwords')
